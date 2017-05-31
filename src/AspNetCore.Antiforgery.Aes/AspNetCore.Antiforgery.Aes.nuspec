@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>AspNetCore.Antiforgery.Aes</id>
+    <version>$version$</version>
+    <title>AES Antiforgery</title>
+    <authors>https://github.com/a-h/</authors>
+    <owners>https://github.com/a-h/</owners>
+    <licenseUrl>https://github.com/a-h/AspNetCore.Antiforgery.Aes/blob/master/LICENSE.md</licenseUrl>
+    <projectUrl>https://github.com/a-h/AspNetCore.Antiforgery.Aes</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>An alternative implementation of CSRF protection for ASP.Net MVC 6 which avoids the need to configure the Data Protection API (requires Redis or a UNC share), instead being able to pass in symmetric keys for the AES algorithm.</description>
+    <releaseNotes>Minor updates.</releaseNotes>
+    <copyright>Copyright 2017</copyright>
+    <tags>dotnet core aspnet mvc csrf</tags>
+  </metadata>
+</package>
