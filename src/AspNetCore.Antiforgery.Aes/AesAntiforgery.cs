@@ -39,6 +39,16 @@ namespace AspNetCore.Antiforgery.Aes
         private readonly ICookieSetter _cookieSetter;
 
         /// <summary>
+        /// Creates an instance of the AesAntiforgery type using the environment variables to collect keys.
+        /// </summary>
+        /// <param name="logger">A logger used to write detailed log entries.</param>
+        /// <param name="duration">The maximum duration of the CSRF token, after this period it will be rejected e.g. after 12 hours.</param>
+        public AesAntiforgery(ILogger<AesAntiforgery> logger, TimeSpan duration)
+            : this(logger, new EnvironmentSettingProvider(), duration)
+        {
+        }
+
+        /// <summary>
         /// Creates an instance of the AesAntiforgery type.
         /// </summary>
         /// <param name="logger">A logger used to write detailed log entries.</param>
@@ -46,7 +56,18 @@ namespace AspNetCore.Antiforgery.Aes
         /// <param name="iv">The iv for AES encrytpion.</param>
         /// <param name="duration">The maximum duration of the CSRF token, after this period it will be rejected e.g. after 12 hours.</param>
         public AesAntiforgery(ILogger<AesAntiforgery> logger, byte[] key, byte[] iv, TimeSpan duration)
-            : this(logger, duration, new EncryptionHandler(key, iv), new CookieSetter())
+            : this(logger, new StaticSettingProvider(key, iv), duration)
+        {
+        }
+
+        /// <summary>
+        /// Creates an instance of the AesAntiforgery type.
+        /// </summary>
+        /// <param name="logger">A logger used to write detailed log entries.</param>
+        /// <param name="settings">The key and IV used for AES encryption.</param>
+        /// <param name="duration">The maximum duration of the CSRF token, after this period it will be rejected e.g. after 12 hours.</param>
+        public AesAntiforgery(ILogger<AesAntiforgery> logger, ISettingProvider settings, TimeSpan duration)
+            : this(logger, duration, new EncryptionHandler(settings.Key, settings.IV), new CookieSetter())
         {
         }
 

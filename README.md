@@ -4,6 +4,23 @@ An alternative implementation of CSRF protection for ASP.Net MVC 6 which avoids 
 
 ### Usage
 
+#### Use the default environment variables
+
+```bash
+export AES_CSRF_KEY=PoQ2zO0w8A/n8eXl3eoN2AQXYhSIyMXJW2QVTzJOVA4=
+export AES_CSRF_IV=L3RrIxqIug+XVp9/fiV4AQ==
+```
+
+```C#
+var logger = p.GetService<ILogger<AesAntiforgery>>();
+var timeout = TimeSpan.FromHours(12);
+
+services.AddScoped<IAntiforgery, AesAntiforgery>(p => 
+        new AesAntiforgery(logger, timeout));
+```
+
+#### Or get the configuration yourself
+
 ```C#
 var logger = p.GetService<ILogger<AesAntiforgery>>();
 var key = Convert.FromBase64String("PoQ2zO0w8A/n8eXl3eoN2AQXYhSIyMXJW2QVTzJOVA4=");
