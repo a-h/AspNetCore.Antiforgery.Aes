@@ -7,3 +7,16 @@ An alternative implementation of CSRF protection for ASP.Net MVC 6 which avoids 
 ```C#
 services.AddScoped<IAntiforgery, AesAntiforgery>(p => new AesAntiforgery(p.GetService<ILogger<AesAntiforgery>>(), config.Key, config.IV, TimeSpan.FromHours(12)));
 ```
+
+### Key generation
+
+```C#
+public static void Main()
+{
+    using (var aes = System.Security.Cryptography.Aes.Create())
+    {
+        Console.WriteLine("Key: " + Convert.ToBase64String(aes.Key));
+        Console.WriteLine("IV: " + Convert.ToBase64String(aes.IV));
+    }
+}
+```
