@@ -4,13 +4,22 @@ namespace AspNetCore.Antiforgery.Aes
 {
     public class RequestToken
     {
-        public RequestToken(TimeSpan expiry)
+        public RequestToken(TimeSpan expiry) : this(() => DateTime.UtcNow, Guid.NewGuid(), expiry)
         {
-            this.Guid = Guid.NewGuid();
-            this.Expiry = DateTime.UtcNow.Add(expiry);
         }
 
-        public RequestToken(string s)
+        public RequestToken(Func<DateTime> dateTimeProvider, Guid g, TimeSpan expiry)
+        {
+            this.DateTimeProvider = dateTimeProvider;
+            this.Guid = g;
+            this.Expiry = DateTimeProvider().Add(expiry);
+        }
+
+        public RequestToken(string s) : this(() => DateTime.UtcNow, s)
+        {
+        }
+
+        public RequestToken(Func<DateTime> dateTimeProvider, string s)
         {
             if (string.IsNullOrWhiteSpace(s))
             {
@@ -24,6 +33,7 @@ namespace AspNetCore.Antiforgery.Aes
                 throw new ArgumentException("s must consist of a guid and ticks number seperated by an underscore");
             }
 
+            this.DateTimeProvider = dateTimeProvider;
             this.Guid = Guid.Parse(parts[0]);
             this.Expiry = new DateTime(long.Parse(parts[1]));
         }
