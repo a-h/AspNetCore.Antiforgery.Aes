@@ -199,7 +199,7 @@ namespace AspNetCore.Antiforgery.Aes
             string cookieValue;
             if (cookies.TryGetValue(COOKIE_NAME, out cookieValue))
             {
-                _encryption.Decrypt(cookieValue);
+                cookieValue = _encryption.Decrypt(cookieValue);
             }
             var hasCookieValue = !string.IsNullOrWhiteSpace(cookieValue);
             if (!hasCookieValue)

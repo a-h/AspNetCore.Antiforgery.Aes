@@ -180,6 +180,41 @@ namespace AspNetCore.Antiforgery.Aes.Tests
         }
 
         [Fact]
+        public async Task IsRequestValidAsyncAllowsRequestsWithAValidCookieAndHTTPHeaderWithEncryption()
+        {
+            // Arrange
+            var ctx = new DefaultHttpContext();
+
+            var key = Convert.FromBase64String("PoQ2zO0w8A/n8eXl3eoN2AQXYhSIyMXJW2QVTzJOVA4=");
+            var iv = Convert.FromBase64String("L3RrIxqIug+XVp9/fiV4AQ==");
+
+            var encryption = new EncryptionHandler(key, iv);
+            var cookieSetter = Substitute.For<ICookieSetter>();
+            var mlogger = Substitute.For<ILogger<AesAntiforgery>>();
+
+            var af = new AesAntiforgery(mlogger, TimeSpan.FromHours(12), encryption, cookieSetter);
+
+            var valuesToValidate = af.CreateAntiforgeryTokenSet();
+
+            ctx.Request.Method = "POST";
+            ctx.Request.ContentType = "application/json";
+            // Add the valid header token.
+            ctx.Request.Headers.Add(valuesToValidate.HeaderName, valuesToValidate.RequestToken);
+            // Add the valid cookie.
+            var cookies = new RequestCookieCollection(new Dictionary<string, string>
+            {
+                { "csrf_requestid_cookie", valuesToValidate.CookieToken },
+            });
+            ctx.Request.Cookies = cookies;
+
+            // Act
+            var isValid = await af.IsRequestValidAsync(ctx);
+
+            // Assert
+            Assert.True(isValid);
+        }
+
+        [Fact]
         public async Task IsRequestValidAsyncRequiresTheCookieToBePresent()
         {
             // Arrange
