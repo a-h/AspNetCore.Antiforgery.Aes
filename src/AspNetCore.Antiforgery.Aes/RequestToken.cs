@@ -35,7 +35,7 @@ namespace AspNetCore.Antiforgery.Aes
 
             this.DateTimeProvider = dateTimeProvider;
             this.Guid = Guid.Parse(parts[0]);
-            this.Expiry = new DateTime(long.Parse(parts[1]));
+            this.Expiry = new DateTime(long.Parse(parts[1]), DateTimeKind.Utc);
         }
 
         public new string ToString()
