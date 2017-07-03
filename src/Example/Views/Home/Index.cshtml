@@ -1,0 +1,22 @@
+@model Example.Models.HomeModel
+
+
+<html>
+    <head>
+        <title>Example</title>
+    </head>
+    <body>
+        <h1>Example</h1>
+        @Model.Say
+        
+        <form asp-controller="Home" asp-action="Index" method="POST">
+            <input asp-for="Say" />
+            <input type="submit" value="Say"/>
+        </form>
+
+        <form asp-controller="Home" asp-action="Index2" method="POST">
+            <input asp-for="Say" />
+            <input type="submit" value="Say"/>
+        </form>
+    </body>
+</html>
