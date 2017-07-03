@@ -31,11 +31,6 @@ namespace AspNetCore.Antiforgery.Aes
         private readonly ILogger<AesAntiforgery> _logger;
         private readonly IEncryptionHandler _encryption;
 
-        /// <summary>
-        /// Stores antiforgery tokens generated in the current HTTP request so that they're reused across
-        /// a single HTTP GET request.
-        /// </summary>
-        private AntiforgeryTokenSet _storedAntiforgeryTokenSet = null;
         private readonly ICookieSetter _cookieSetter;
 
         /// <summary>
@@ -91,9 +86,9 @@ namespace AspNetCore.Antiforgery.Aes
             _logger.LogDebug("GetAndStoreTokens {method}", httpContext.Request.Method);
 
             // Set required headers.
-            httpContext.Response.Headers.Add("Cache-control", "no-cache");
-            httpContext.Response.Headers.Add("Pragma", "no-cache");
-            httpContext.Response.Headers.Add("X-Frame-Options", "SAMEORIGIN");
+            SetHeader(httpContext.Response.Headers, "Cache-control", "no-cache");
+            SetHeader(httpContext.Response.Headers, "Pragma", "no-cache");
+            SetHeader(httpContext.Response.Headers, "X-Frame-Options", "SAMEORIGIN");
 
             var tokenSet = GetTokens(httpContext);
 
@@ -103,20 +98,32 @@ namespace AspNetCore.Antiforgery.Aes
             return tokenSet;
         }
 
+        private void SetHeader(IHeaderDictionary headers, string key, string value)
+        {
+            if (!headers.ContainsKey(key))
+            {
+                headers.Add(key, value);
+            }
+        }
+
         /// <inheritdoc />
         public AntiforgeryTokenSet GetTokens(HttpContext httpContext)
         {
-            if (_storedAntiforgeryTokenSet == null)
+            // Check to see whether the HTTP request already has tokens stored in the context.
+            object ts = null;
+            var alreadyCalledForHttpRequest = httpContext.Items.TryGetValue("antiforgeryTokenSetForRequest", out ts);
+
+            if (alreadyCalledForHttpRequest && ts != null && ts is AntiforgeryTokenSet)
             {
-                _logger.LogDebug("GetTokens - creating new tokens");
-                _storedAntiforgeryTokenSet = CreateAntiforgeryTokenSet();
-            }
-            else
-            {
-                _logger.LogDebug("GetTokens - reusing existing tokens");
+                _logger.LogDebug("GetTokens - reusing antiforgery tokens already set on the HTTP context");
+                return ts as AntiforgeryTokenSet;
             }
 
-            return _storedAntiforgeryTokenSet;
+            // Store antiforgery tokens generated in the current HTTP request so that they're reused across a single HTTP GET request.
+            _logger.LogDebug("GetTokens - creating new tokens and storing them on the HTTP context");
+            var antiforgeryTokenSet = CreateAntiforgeryTokenSet();
+            httpContext.Items.Add("antiforgeryTokenSetForRequest", antiforgeryTokenSet);
+            return antiforgeryTokenSet;
         }
 
         /// <inheritdoc />
@@ -177,7 +184,7 @@ namespace AspNetCore.Antiforgery.Aes
 
             if (hasExpired)
             {
-                _logger.LogDebug("IsRequestValidAsync returned false because the token has expired.");
+                _logger.LogDebug("IsRequestValidAsync returned false because the cookie token expired at {expirydate}.", cookieToken.Expiry);
                 return Task.FromResult<bool>(false);
             }
 
